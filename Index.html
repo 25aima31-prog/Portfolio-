@@ -1,145 +1,48 @@
-const express = require("express");
-const fs = require("fs");
-
-const app = express();
-app.use(express.json());
-
-const FILE = "data.json";
-
-// Read data
-function readData() {
-    if (!fs.existsSync(FILE)) return [];
-    return JSON.parse(fs.readFileSync(FILE));
-}
-
-// Write data
-function writeData(data) {
-    fs.writeFileSync(FILE, JSON.stringify(data, null, 2));
-}
-
-// FRONTEND (HTML + CSS + JS in one)
-app.get("/", (req, res) => {
-    res.send(`
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<title>Matrimony</title>
-<style>
-body { font-family: Arial; text-align: center; background: #f9f9f9; }
-h1 { background: #e91e63; color: white; padding: 10px; }
-input, select { padding: 10px; margin: 10px; }
-button { padding: 10px; background: #e91e63; color: white; border: none; }
-.profile { background: white; border: 1px solid #ccc; margin: 10px; padding: 10px; }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Matrimony Website</title>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-
-<h1>💍 Perfect Match</h1>
-
-<h2>Create Profile</h2>
-<input id="name" placeholder="Name">
-<input id="age" placeholder="Age">
-
-<select id="gender">
-<option>Male</option>
-<option>Female</option>
-</select>
-
-<input id="city" placeholder="City">
-<button onclick="register()">Register</button>
-
-<h2>Search 🔍</h2>
-<input id="search" placeholder="Search by city">
-<button onclick="search()">Search</button>
-
-<h2>Profiles</h2>
-<div id="profiles"></div>
-
-<script>
-
-// REGISTER
-async function register() {
-    let data = {
-        name: document.getElementById("name").value,
-        age: document.getElementById("age").value,
-        gender: document.getElementById("gender").value,
-        city: document.getElementById("city").value
-    };
-
-    if (!data.name || !data.age || !data.city) {
-        alert("Fill all fields!");
-        return;
-    }
-
-    await fetch("/profiles", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data)
-    });
-
-    loadProfiles();
-}
-
-// LOAD
-async function loadProfiles() {
-    let res = await fetch("/profiles");
-    let profiles = await res.json();
-
-    show(profiles);
-}
-
-// SEARCH
-async function search() {
-    let text = document.getElementById("search").value.toLowerCase();
-    let res = await fetch("/profiles");
-    let profiles = await res.json();
-
-    let filtered = profiles.filter(p =>
-        p.city.toLowerCase().includes(text)
-    );
-
-    show(filtered);
-}
-
-// DISPLAY
-function show(profiles) {
-    let div = document.getElementById("profiles");
-    div.innerHTML = "";
-
-    profiles.forEach(p => {
-        div.innerHTML += \`
-            <div class="profile">
-                <h3>\${p.name}</h3>
-                <p>Age: \${p.age}</p>
-                <p>\${p.gender}</p>
-                <p>\${p.city}</p>
-            </div>
-        \`;
-    });
-}
-
-loadProfiles();
-
-</script>
-
+    <header>
+        <h1>Welcome to Our Matrimony Website</h1>
+        <nav>
+            <ul>
+                <li><a href="#about">About</a></li>
+                <li><a href="#services">Services</a></li>
+                <li><a href="#contact">Contact Us</a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        <section id="about">
+            <h2>About Us</h2>
+            <p>We are dedicated to helping individuals find their life partners through a user-friendly platform.</p>
+        </section>
+        <section id="services">
+            <h2>Our Services</h2>
+            <ul>
+                <li>Profile Creation</li>
+                <li>Matchmaking</li>
+                <li>Success Stories</li>
+            </ul>
+        </section>
+        <section id="contact">
+            <h2>Contact Us</h2>
+            <form>
+                <label for="name">Name:</label>
+                <input type="text" id="name" name="name" required>
+                <label for="email">Email:</label>
+                <input type="email" id="email" name="email" required>
+                <input type="submit" value="Submit">
+            </form>
+        </section>
+    </main>
+    <footer>
+        <p>&copy; 2026 Matrimony Website</p>
+    </footer>
 </body>
 </html>
-    `);
-});
-
-// API
-app.get("/profiles", (req, res) => {
-    res.json(readData());
-});
-
-app.post("/profiles", (req, res) => {
-    let data = readData();
-    data.push(req.body);
-    writeData(data);
-    res.json({ message: "Saved" });
-});
-
-// START SERVER
-app.listen(3000, () => {
-    console.log("Server running on http://localhost:3000");
-});
